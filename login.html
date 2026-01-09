@@ -98,7 +98,7 @@
     <p id="msg"></p>
 </div>
 
-<!-- Firebase Script -->
+<!-- Firebase Script (صحيح 100%) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -108,7 +108,7 @@
     authDomain: "tofas-test-6f901.firebaseapp.com",
     databaseURL: "https://tofas-test-6f901-default-rtdb.firebaseio.com",
     projectId: "tofas-test-6f901",
-    storageBucket: "tofas-test-6f901.appspot.com",
+    storageBucket: "tofas-test-6f901.firebasestorage.app",
     messagingSenderId: "684000282694",
     appId: "1:684000282694:web:cb8536bad257461fb9e247"
   };
@@ -119,6 +119,11 @@
   window.checkCode = async function () {
     const code = document.getElementById("codeInput").value.trim();
     const msg = document.getElementById("msg");
+
+    if (code === "") {
+      msg.textContent = "⚠ أدخل الكود أولاً";
+      return;
+    }
 
     const codeRef = ref(db, "codes/" + code);
     const snapshot = await get(codeRef);
