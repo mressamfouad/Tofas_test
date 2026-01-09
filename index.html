@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essam Fouad Exam System</title>
+    <style>
+        /* --- 1. إعدادات الخطوط والألوان --- */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+
+        :root {
+            --header-bg: #0b2447;
+            --bg-color: #f0f2f5;
+            --teal-btn: #4db6ac;
+            --blue-selected: #1976d2;
+            --text-color: #333;
+            --header-height: 60px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            overflow-y: auto; 
+            padding-top: var(--header-height);
+        }
+
+        /* --- 2. الشريط العلوي (مثبت) --- */
+        .top-bar {
+            height: var(--header-height);
+            background-color: var(--header-bg);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 14px;
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            z-index: 1000;
+        }
+
+        .bar-right, .bar-left { display: flex; align-items: center; gap: 10px; }
+        
+        .menu-btn {
+            background: none; border: none; color: white; font-size: 1.2rem;
+            cursor: pointer; display: flex; align-items: center; gap: 5px;
+            font-family: 'Cairo', sans-serif;
+            transition: 0.2s;
+        }
+        .menu-btn:hover { color: var(--teal-btn); }
+
+        .info-pill {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px; border-radius: 4px; display: flex;
+            align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn {
+            border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer;
+            font-family: 'Cairo', sans-serif; font-weight: 600; transition: 0.2s;
+        }
+        .btn-finish { background-color: var(--teal-btn); color: #004d40; }
+        .btn-finish:hover { opacity: 0.9; }
+        .btn-next { background-color: #e0e0e0; color: #333; }
+        .btn-next:hover { background-color: #d5d5d5; }
+        .btn-back { background-color: transparent; color: #aaa; border: 1px solid #555; }
+        .btn-back:hover { color: white; border-color: white; }
+
+        /* --- 3. حاوية الاختبار --- */
+        .exam-container {
+            display: flex;
+            align-items: flex-start;
+            width: 100%;
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        /* اليمين: السؤال (Sticky) */
+        .question-panel {
+            width: 45%; 
+            background: #fff; 
+            padding: 30px;
+            border-left: 1px solid #ddd; 
+            position: sticky;
+            top: var(--header-height);
+            height: calc(100vh - var(--header-height));
+            overflow-y: auto;
+        }
+
+        .q-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .q-title { font-size: 1.3rem; color: #666; font-weight: bold; }
+        .explain-btn {
+            background: #fff; border: 1px solid #ccc; padding: 5px 12px;
+            border-radius: 4px; color: #666; cursor: pointer; font-size: 0.9rem;
+            font-family: 'Cairo', sans-serif;
+        }
+        .q-text { font-size: 1.2rem; margin-bottom: 25px; color: #444; line-height: 1.6; }
+
+        .output-box {
+            background-color: #f8f9fa; border: 1px solid #ddd; padding: 20px;
+            border-radius: 6px; min-height: 80px; display: flex;
+            align-items: center; font-family: 'Cairo', sans-serif;
+            font-weight: bold; font-size: 1.1rem; color: #333;
+            position: relative; white-space: pre-wrap;
+            direction: ltr; text-align: right;
+        }
+
+        /* اليسار: الخيارات */
+        .options-panel {
+            width: 55%; 
+            background-color: #dbe0e6; 
+            padding: 20px;
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px;
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .option-card {
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            min-height: 80px; 
+            height: auto;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 2px solid transparent;
+        }
+        .option-card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+        .opt-number-strip {
+            width: 45px; background-color: #eef1f5; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            border-left: 1px solid #ddd; color: #8898aa; font-weight: bold;
+            font-size: 1.2rem; transition: 0.2s; flex-shrink: 0;
+            border-top-right-radius: 6px; border-bottom-right-radius: 6px;
+        }
+
+        .radio-check {
+            width: 24px; height: 24px; border: 2px solid #ccc;
+            border-radius: 50%; margin-bottom: 8px; transition: 0.2s;
+        }
+
+        .opt-code {
+            flex: 1; padding: 15px 20px; display: flex; align-items: center;
+            font-family: 'Fira Code', 'Courier New', monospace; direction: ltr; 
+            color: #333; font-weight: 700; font-size: 1.1rem;    
+            line-height: 1.6; word-break: break-word;
+        }
+        .opt-code pre { margin: 0; white-space: pre-wrap; }
+
+        .option-card.selected { border-color: var(--blue-selected); }
+        .option-card.selected .opt-number-strip {
+            background-color: var(--blue-selected); color: white; border-left: none;
+        }
+        .option-card.selected .radio-check {
+            border-color: white; background-color: transparent;
+        }
+        .option-card.selected .radio-check::after {
+            content: ''; width: 12px; height: 12px; background: white;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+
+        /* --- Modals --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+        }
+
+        /* List Modal */
+        .question-list-content {
+            background-color: #fff; width: 100%; height: 100%; max-width: 450px;
+            display: flex; flex-direction: column;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            position: absolute; right: 0; top: 0; 
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        .list-header {
+            background-color: var(--header-bg); color: white; padding: 20px; text-align: center; position: relative;
+        }
+        .close-btn-list {
+            position: absolute; top: 20px; left: 20px; background: none; border: none;
+            color: white; font-size: 1.5rem; cursor: pointer;
+        }
+        .list-title { font-size: 1.1rem; margin-bottom: 15px; font-weight: bold; }
+        .list-scroll-area { flex: 1; overflow-y: auto; padding: 10px 0; }
+        .list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 25px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s;
+        }
+        .list-item:hover { background-color: #f9f9f9; }
+        .item-q-name { font-weight: bold; color: #333; text-decoration: underline; text-decoration-color: #ddd; }
+        .item-status { font-size: 0.9rem; font-weight: bold; }
+        .status-answered { color: #2e7d32; text-decoration: underline; }
+        .status-unanswered { color: #d32f2f; }
+
+        /* Confirm Modal */
+        .center-modal {
+            background: white; width: 90%; max-width: 500px; border-radius: 12px;
+            padding: 30px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            font-family: 'Cairo', sans-serif;
+        }
+        .modal-title { font-weight: bold; font-size: 1.4rem; color: #333; margin-bottom: 20px; }
+        .info-box {
+            background-color: #e3f2fd; border: 1px solid #bbdefb; color: #0d47a1;
+            padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex;
+            align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem; text-align: right;
+        }
+        .warning-text { color: #d32f2f; font-weight: bold; margin-bottom: 30px; font-size: 0.95rem; }
+        .modal-actions { display: flex; justify-content: center; gap: 20px; }
+        .btn-modal { padding: 10px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 1rem; border: none; }
+        .btn-cancel { background: white; border: 1px solid #ccc; color: #555; }
+        .btn-cancel:hover { background: #f5f5f5; }
+        .btn-confirm { background: #d32f2f; color: white; }
+        .btn-confirm:hover { background: #b71c1c; }
+
+        /* Success Modal */
+        .success-logo { 
+            color: #000080; font-weight: bold; font-size: 2rem; margin-bottom: 10px; letter-spacing: 1px;
+        }
+        .success-logo span { color: #ff007f; }
+        
+        .score-display {
+            font-size: 1.3rem; color: #333; font-weight: bold; margin: 10px 0 20px 0;
+            padding: 10px; background: #f0f7ff; border-radius: 8px; border: 1px solid #cce5ff;
+        }
+
+        .check-circle {
+            width: 80px; height: 80px; border-radius: 50%; border: 5px solid #0288d1;
+            display: flex; justify-content: center; align-items: center; margin: 20px auto;
+        }
+        .check-mark {
+            width: 25px; height: 45px; border-bottom: 5px solid #0288d1; border-right: 5px solid #0288d1;
+            transform: rotate(45deg); margin-bottom: 10px;
+        }
+        .success-text { color: #555; margin-bottom: 30px; line-height: 1.6; font-size: 0.95rem; }
+        .btn-close-success {
+            background-color: #0288d1; color: white; width: 100%; padding: 12px;
+            border-radius: 30px; font-size: 1.1rem; border: none; cursor: pointer; font-weight: bold;
+        }
+        .btn-close-success:hover { background-color: #0277bd; }
+
+        .end-exam-btn-large {
+            background-color: #64ffda; color: #0b2447; border: none;
+            padding: 10px 50px; border-radius: 25px; font-size: 1rem;
+            font-weight: bold; cursor: pointer; display: inline-block;
+            font-family: 'Cairo', sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .end-exam-btn-large:hover { background-color: #52e0c0; }
+
+        @media (max-width: 900px) {
+            .exam-container { flex-direction: column; }
+            .question-panel { 
+                width: 100%; height: auto; position: relative; top: 0;
+                border-left: none; border-bottom: 1px solid #ddd; 
+            }
+            .options-panel { width: 100%; min-height: auto; }
+            .question-list-content { max-width: 100%; position: fixed; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-bar">
+        <div class="bar-right">
+            <button class="menu-btn" onclick="toggleQuestionList()"><span>☰</span><span style="margin-right:5px"> قائمة الأسئلة &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; تصميم مستر عصام فؤاد</span></button>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <div class="info-pill"><span id="q-counter">1 / 20</span><span>📝 السؤال</span></div>
+            <div class="info-pill"><span id="timer">40:00</span><span>⏱ متبقى</span></div>
+        </div>
+        <div class="bar-left">
+            <button class="btn btn-back" id="btn-prev" onclick="prevQuestion()" disabled>رجوع</button>
+            <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">التالي</button>
+            <button class="btn btn-finish" onclick="showConfirmModal()">إنهاء الاختبار</button>
+        </div>
+    </header>
+
+    <div class="exam-container">
+        <div class="question-panel">
+            <div class="q-header-row">
+                <span class="q-title" id="q-title">السؤال 1</span>
+                <button class="explain-btn">عرض شرح الكود</button>
+            </div>
+            <p class="q-text" id="q-text">...</p>
+            <div class="output-box" id="q-output">...</div>
+        </div>
+
+        <div class="options-panel" id="options-container"></div>
+    </div>
+
+    <div class="modal-overlay" id="questionListModal" style="justify-content: flex-start;">
+        <div class="question-list-content">
+            <div class="list-header">
+                <button class="close-btn-list" onclick="toggleQuestionList()">✕ يغلق</button>
+                <div class="list-title">TOFAS (المستوى الأول في برمجة جافا سكربت)</div>
+                <button class="end-exam-btn-large" onclick="showConfirmModal()">نهاية الاختبار</button>
+            </div>
+            <div class="list-scroll-area" id="listItemsContainer"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="center-modal">
+            <h3 class="modal-title">هل تريد إنهاء الاختبار؟</h3>
+            <div class="info-box">
+                <span style="font-size:1.5rem; color:#0288d1">ⓘ</span>
+                يرجى مراجعة إجاباتك قبل إنهاء الاختبار.
+            </div>
+            <p class="warning-text">بمجرد إنهاء الاختبار، لا يمكن البدء مرة أخرى.</p>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeConfirmModal()">رجوع</button>
+                <button class="btn-modal btn-confirm" onclick="finalizeExam()">إنهاء الاختبار</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="successModal">
+        <div class="center-modal" style="padding: 40px 30px;">
+            <div class="success-logo">Essam <span>Fouad</span></div>
+            <div id="finalScoreDisplay" class="score-display" style="display:none;"></div>
+            <h3 style="margin: 10px 0; color: #333;">لقد تم إرسال نتائجك.</h3>
+            <div class="check-circle"><div class="check-mark"></div></div>
+            <div class="success-text">
+                <p style="font-weight: bold; margin-bottom:10px;">لقد تم استلام إجاباتك.</p>
+                <p>بمجرد الانتهاء، يرجى اتباع قواعد المكان الذي ستجري فيه الاختبار.<br>
+                إذا كنت لا تعرف ماذا تفعل، يرجى أن تسأل الميسر الخاص بك.</p>
+            </div>
+            <button class="btn-close-success" onclick="closeSuccessModal()">يغلق</button>
+        </div>
+    </div>
+<script>
+  if (sessionStorage.getItem("access") !== "ok") {
+    window.location.href = "login.html";
+  }
+</script>
+
+    <script>
+        // --- الأسئلة (20 سؤال) ---
+        const questions = [
+            // Q1
+            {
+                id: 1,
+                title: "السؤال 1",
+                text: "حدد البرنامج الذي يقوم بإخراج الرقم: 3",
+                targetOutput: "3",
+                options: [
+                    { code: 'let num1 = 18;\nlet num2 = 15;\nnum1 / num2;' },
+                    { code: 'let num1 = 18;\nlet num2 = 15;\nconsole.log(num1 / num2);' },
+                    { code: 'let num1 = 18;\nlet num2 = 15;\nnum1 - num2;' },
+                    { code: 'let num1 = 18;\nlet num2 = 15;\nconsole.log(num1 - num2);' } 
+                ],
+                correctAnswer: 3
+            },
+            // Q2
+            {
+                id: 2,
+                title: "السؤال 2",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: Banana",
+                targetOutput: "Banana",
+                options: [
+                    { code: 'let fruit > "Banana";\nfruit;' },
+                    { code: 'let fruit > "Banana";\nconsole.log(fruit);' },
+                    { code: 'let fruit = "Banana";\nfruit;' },
+                    { code: 'let fruit = "Banana";\nconsole.log(fruit);' } 
+                ],
+                correctAnswer: 3
+            },
+            // Q3
+            {
+                id: 3,
+                title: "السؤال 3",
+                text: "حدد البرنامج الذي يقوم بإخراج التالي:",
+                targetOutput: "Train\nBus",
+                options: [
+                    { code: 'let vehicle = "Train";\nconsole.log(vehicle);\nvehicle = "Bus";\nconsole.log(vehicle);' }, 
+                    { code: 'let vehicle = "Train";\nvehicle;\nvehicle < "Bus";\nvehicle;' },
+                    { code: 'let vehicle = "Train";\nconsole.log(vehicle);\nvehicle < "Bus";\nconsole.log(vehicle);' },
+                    { code: 'let vehicle = "Train";\nvehicle;\nvehicle = "Bus";\nvehicle;' }
+                ],
+                correctAnswer: 0
+            },
+            // Q4
+            {
+                id: 4,
+                title: "السؤال 4",
+                text: "حدد البرنامج الذي يقوم بإخراج الرقم: 200",
+                targetOutput: "200",
+                options: [
+                    { code: 'let num = 150;\nnum = 50;\nconsole.log(num);' },
+                    { code: 'let num = 150;\nnum + 50;\nconsole.log(num);' },
+                    { code: 'let num = 150;\nnum = num + 50;\nconsole.log(num);' }, 
+                    { code: 'let num = 150;\nnum = num - 50;\nconsole.log(num);' }
+                ],
+                correctAnswer: 2
+            },
+            // Q5
+            {
+                id: 5,
+                title: "السؤال 5",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: Over capacity",
+                targetOutput: "Over capacity",
+                options: [
+                    { code: 'let passengers = 12;\nlet additionalPassengers = 4;\nlet capacity = 15;\nelse ((passengers + additionalPassengers) > capacity) {\n  console.log("Over capacity");\n} else {\n  console.log("Starting to move.");\n}' },
+                    { code: 'let passengers = 12;\nlet additionalPassengers = 4;\nlet capacity = 15;\nelse ((passengers / additionalPassengers) > capacity) {\n  console.log("Over capacity");\n} else {\n  console.log("Starting to move.");\n}' },
+                    { code: 'let passengers = 12;\nlet additionalPassengers = 4;\nlet capacity = 15;\nif ((passengers / additionalPassengers) > capacity) {\n  console.log("Over capacity");\n} else {\n  console.log("Starting to move.");\n}' },
+                    { code: 'let passengers = 12;\nlet additionalPassengers = 4;\nlet capacity = 15;\nif ((passengers + additionalPassengers) > capacity) {\n  console.log("Over capacity");\n} else {\n  console.log("Starting to move.");\n}' } 
+                ],
+                correctAnswer: 3
+            },
+            // Q6
+            {
+                id: 6,
+                title: "السؤال 6",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: My friend is older.",
+                targetOutput: "My friend is older.",
+                options: [
+                    { code: 'let myAge = 10;\nlet friendAge = 12;\nif (myAge > friendAge) {\n  console.log("I\'m older.");\n else {\n  console.log("My friend is older.");\n}' }, 
+                    { code: 'let myAge == 10;\nlet friendAge == 12;\nif (myAge > friendAge) {\n  console.log("I\'m older.");\n} else {\n  console.log("My friend is older.");\n}' },
+                    { code: 'let myAge = 10;\nlet friendAge = 12;\nif (myAge > friendAge) {\n  console.log("I\'m older.");\n} else {\n  console.log("My friend is older.");\n}' }, 
+                    { code: 'let myAge == 10;\nlet friendAge == 12;\nif (myAge > friendAge) {\n  console.log("I\'m older.");\n} else {\n  console.log("My friend is older.");\n}' }
+                ],
+                correctAnswer: 2
+            },
+            // Q7
+            {
+                id: 7,
+                title: "السؤال 7",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: Charging is not needed.",
+                targetOutput: "Charging is not needed.",
+                options: [
+                    { code: 'let battery = 50;\nif (battery < 20) {\n  console.log("Charging is recommended.");\n} else {\n  console.log("Charging is not needed.");\n}' }, 
+                    { code: 'let battery = 50;\nif {\n  console.log("Charging is recommended.");\n} else {\n  console.log("Charging is not needed.");\n}' },
+                    { code: 'let battery = 50;\nif (battery < 20) {\n  console.log("Charging is recommended.");\n} if {\n  console.log("Charging is not needed.");\n}' },
+                    { code: 'let battery = 50;\nif {\n  console.log("Charging is recommended.");\n} if {\n  console.log("Charging is not needed.");\n}' }
+                ],
+                correctAnswer: 0
+            },
+            // Q8 (تم التعديل بدقة حسب الصور)
+            {
+                id: 8,
+                title: "السؤال 8",
+                text: "حدد البرنامج الذي يقوم بإخراج \"يمكنك المتابعة.\"",
+                targetOutput: "يمكنك المتابعة.",
+                options: [
+                    { code: 'let signal = "أخضر";\n\nelse (signal == "أخضر") {\n  console.log("يمكنك المتابعة.");\n}' },
+                    { code: 'let signal = "أخضر";\n\nif (signal == "أخضر") {\n  console.log("يمكنك المتابعة.");\n}' }, // Correct (Image 8.png + 81.png logic)
+                    { code: 'let signal = "أخضر";\n\nelse (signal < "أخضر") {\n  console.log("يمكنك المتابعة.");\n}' },
+                    { code: 'let signal = "أخضر";\n\nif (signal < "أخضر") {\n  console.log("يمكنك المتابعة.");\n}' }
+                ],
+                correctAnswer: 1
+            },
+            // Q9 (تم التعديل بدقة حسب الصور)
+            {
+                id: 9,
+                title: "السؤال 9",
+                text: "حدد البرنامج الذي يقوم بإخراج \"يرجى الشحن.\"",
+                targetOutput: "يرجى الشحن.",
+                options: [
+                    { code: 'let batteryPower = "فارغ";\n\nif (batteryPower == "ممتلىء") {\n  console.log("لا حاجة للشحن.");\n} if {\n  console.log("يرجى الشحن.");\n}' },
+                    { code: 'let batteryPower = "فارغ";\n\nif (batteryPower = "ممتلىء") {\n  console.log("لا حاجة للشحن.");\n} if {\n  console.log("يرجى الشحن.");\n}' },
+                    { code: 'let batteryPower = "فارغ";\n\nif (batteryPower == "ممتلىء") {\n  console.log("لا حاجة للشحن.");\n} else {\n  console.log("يرجى الشحن.");\n}' }, // Correct
+                    { code: 'let batteryPower = "فارغ";\n\nif (batteryPower = "ممتلىء") {\n  console.log("لا حاجة للشحن.");\n} else {\n  console.log("يرجى الشحن.");\n}' }
+                ],
+                correctAnswer: 2
+            },
+            // Q10 (تم التعديل بدقة حسب الصور)
+            {
+                id: 10,
+                title: "السؤال 10",
+                text: "حدد البرنامج الذي يقوم بإخراج \"لقد وصلت إلى المطار.\"",
+                targetOutput: "لقد وصلت إلى المطار.",
+                options: [
+                    { code: 'let destination = "مطار";\n\nif (destination = "محطة") {\n  console.log("المحطة");\n} else (destination = "مطار") {\n  console.log("لقد وصلت إلى المطار.");\n} else {\n  console.log("لا أعرف");\n}' },
+                    { code: 'let destination = "مطار";\n\nif (destination == "محطة") {\n  console.log("المحطة");\n} else if (destination == "مطار") {\n  console.log("لقد وصلت إلى المطار.");\n} else {\n  console.log("لا أعرف");\n}' }, // Correct
+                    { code: 'let destination = "مطار";\n\nif (destination = "محطة") {\n  console.log("المحطة");\n} else if (destination = "مطار") {\n  console.log("لقد وصلت إلى المطار.");\n} else {\n  console.log("لا أعرف");\n}' },
+                    { code: 'let destination = "مطار";\n\nif (destination == "محطة") {\n  console.log("المحطة");\n} else (destination == "مطار") {\n  console.log("لقد وصلت إلى المطار.");\n} else {\n  console.log("لا أعرف");\n}' }
+                ],
+                correctAnswer: 1
+            },
+            // Q11
+            {
+                id: 11,
+                title: "السؤال 11",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: Fuel is full.",
+                targetOutput: "Fuel is full.",
+                options: [
+                    { code: 'let fuel 100;\nif (fuel == 100) {\n  console.log("Fuel is full.");\n}' },
+                    { code: 'let fuel 100;\nif (fuel > 100) {\n  console.log("Fuel is full.");\n}' },
+                    { code: 'let fuel = 100;\nif (fuel > 100) {\n  console.log("Fuel is full.");\n}' },
+                    { code: 'let fuel = 100;\nif (fuel == 100) {\n  console.log("Fuel is full.");\n}' }
+                ],
+                correctAnswer: 3
+            },
+            // Q12
+            {
+                id: 12,
+                title: "السؤال 12",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: Please charge.",
+                targetOutput: "Please charge.",
+                options: [
+                    { code: 'let batteryPower = "Empty";\nif (batteryPower == "Full") {\n  console.log("No need to charge.");\n} if {\n  console.log("Please charge.");\n}' },
+                    { code: 'let batteryPower = "Empty";\nif (batteryPower = "Full") {\n  console.log("No need to charge.");\n} if {\n  console.log("Please charge.");\n}' },
+                    { code: 'let batteryPower = "Empty";\nif (batteryPower == "Full") {\n  console.log("No need to charge.");\n} else {\n  console.log("Please charge.");\n}' },
+                    { code: 'let batteryPower = "Empty";\nif (batteryPower = "Full") {\n  console.log("No need to charge.");\n} else {\n  console.log("Please charge.");\n}' }
+                ],
+                correctAnswer: 2
+            },
+            // Q13
+            {
+                id: 13,
+                title: "السؤال 13",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: That will be 200 yen.",
+                targetOutput: "That will be 200 yen.",
+                options: [
+                    { code: 'let order = "Orange juice";\nif (order > "Apple juice") {\n  console.log("That will be 250 yen.");\n} else if (order > "Orange juice") {\n  console.log("That will be 200 yen.");\n} else {\n  console.log("Currently out of stock.");\n}' },
+                    { code: 'let order = "Orange juice";\nif (order == "Apple juice") {\n  console.log("That will be 250 yen.");\n} else if (order == "Orange juice") {\n  console.log("That will be 200 yen.");\n} else {\n  console.log("Currently out of stock.");\n}' },
+                    { code: 'let order = "Orange juice";\nif (order > "Apple juice") {\n  console.log("That will be 250 yen.");\n} else (order > "Orange juice") {\n  console.log("That will be 200 yen.");\n} else {\n  console.log("Currently out of stock.");\n}' },
+                    { code: 'let order = "Orange juice";\nif (order == "Apple juice") {\n  console.log("That will be 250 yen.");\n} else (order == "Orange juice") {\n  console.log("That will be 200 yen.");\n} else {\n  console.log("Currently out of stock.");\n}' }
+                ],
+                correctAnswer: 1
+            },
+            // Q14
+            {
+                id: 14,
+                title: "السؤال 14",
+                text: "حدد البرنامج الذي يقوم بإخراج التالي:",
+                targetOutput: "1500\nYou don't have enough money.",
+                options: [
+                    { code: 'let orangePrice = 300;\nlet orangeNum = 5;\nlet totalCost = 0;\ntotalCost = orangePrice * orangeNum;\nconsole.log(totalCost);\nif (totalCost < 1000) {\n  console.log("You can buy it.");\n} else {\n  console.log("You don\'t have enough money.");\n}' },
+                    { code: 'let orangePrice = 300;\nlet orangeNum = 5;\nlet totalCost = 0;\ntotalCost = orangePrice * orangeNum;\nconsole.log(totalCost);\nif (totalCost > 1000) {\n  console.log("You can buy it.");\n} else {\n  console.log("You don\'t have enough money.");\n}' },
+                    { code: 'let orangePrice = 300;\nlet orangeNum = 5;\nlet totalCost = 0;\ntotalCost = orangePrice / orangeNum;\nconsole.log(totalCost);\nif (totalCost < 1000) {\n  console.log("You can buy it.");\n} else {\n  console.log("You don\'t have enough money.");\n}' },
+                    { code: 'let orangePrice = 300;\nlet orangeNum = 5;\nlet totalCost = 0;\ntotalCost = orangePrice / orangeNum;\nconsole.log(totalCost);\nif (totalCost > 1000) {\n  console.log("You can buy it.");\n} else {\n  console.log("You don\'t have enough money.");\n}' }
+                ],
+                correctAnswer: 0
+            },
+            // Q15
+            {
+                id: 15,
+                title: "السؤال 15",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: Proper size",
+                targetOutput: "Proper size",
+                options: [
+                    { code: 'let size => 70;\nif (size > 100) {\n  console.log("Proper size");\n} else {\n  console.log("Over size limit");\n}' },
+                    { code: 'let size = 70;\nif (size < 100) {\n  console.log("Proper size");\n} else {\n  console.log("Over size limit");\n}' },
+                    { code: 'let size = 70;\nif (size > 100) {\n  console.log("Proper size");\n} else {\n  console.log("Over size limit");\n}' },
+                    { code: 'let size => 70;\nif (size < 100) {\n  console.log("Proper size");\n} else {\n  console.log("Over size limit");\n}' }
+                ],
+                correctAnswer: 1
+            },
+            // Q16
+            {
+                id: 16,
+                title: "السؤال 16",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: Reservations are available.",
+                targetOutput: "Reservations are available.",
+                options: [
+                    { code: 'let peopleNumLimit = 20;\nlet reservationPeopleNum = 10;\nelse (peopleNumLimit < reservationPeopleNum) {\n  console.log("Reservations are available.");\n} else {\n  console.log("Reservations are not available.");\n}' },
+                    { code: 'let peopleNumLimit = 20;\nlet reservationPeopleNum = 10;\nif (peopleNumLimit > reservationPeopleNum) {\n  console.log("Reservations are available.");\n} else {\n  console.log("Reservations are not available.");\n}' },
+                    { code: 'let peopleNumLimit = 20;\nlet reservationPeopleNum = 10;\nif (peopleNumLimit < reservationPeopleNum) {\n  console.log("Reservations are available.");\n} else {\n  console.log("Reservations are not available.");\n}' },
+                    { code: 'let peopleNumLimit = 20;\nlet reservationPeopleNum = 10;\nelse (peopleNumLimit > reservationPeopleNum) {\n  console.log("Reservations are available.");\n} else {\n  console.log("Reservations are not available.");\n}' }
+                ],
+                correctAnswer: 1
+            },
+            // Q17
+            {
+                id: 17,
+                title: "السؤال 17",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: I am going to school.",
+                targetOutput: "I am going to school.",
+                options: [
+                    { code: 'if (timeZone == 8) {\n  "I am going to school.";\n}\nlet timeZone = 8;' },
+                    { code: 'let timeZone = 8;\nif (timeZone == 8) {\n  "I am going to school.";\n}' },
+                    { code: 'if (timeZone == 8) {\n  console.log("I am going to school.");\n}\nlet timeZone = 8;' },
+                    { code: 'let timeZone = 8;\nif (timeZone == 8) {\n  console.log("I am going to school.");\n}' }
+                ],
+                correctAnswer: 3
+            },
+            // Q18
+            {
+                id: 18,
+                title: "السؤال 18",
+                text: "حدد البرنامج الذي يقوم بإخراج التالي:",
+                targetOutput: "Your savings have increased.\n200,000 yen",
+                options: [
+                    { code: 'let savingBalance = "100,000 yen";\nsavingBalance("200,000 yen");\nconsole.log("Your savings have increased.");\nconsole.log(savingBalance);' },
+                    { code: 'let savingBalance = "100,000 yen";\nconsole.log("Your savings have increased.");\nconsole.log(savingBalance);\nsavingBalance("200,000 yen");' },
+                    { code: 'let savingBalance = "100,000 yen";\nconsole.log("Your savings have increased.");\nconsole.log(savingBalance);\nsavingBalance = "200,000 yen";' },
+                    { code: 'let savingBalance = "100,000 yen";\nsavingBalance = "200,000 yen";\nconsole.log("Your savings have increased.");\nconsole.log(savingBalance);' }
+                ],
+                correctAnswer: 3
+            },
+            // Q19
+            {
+                id: 19,
+                title: "السؤال 19",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: The number of apples and oranges is the same.",
+                targetOutput: "The number of apples and oranges is the same.",
+                options: [
+                    { code: 'if (appleNum == orangeNum) {\n  console.log("The number of apples and oranges is the same.");\n} else {\n  console.log("The number of apples and oranges is not the same.");\n}\nlet appleNum = 10;\nlet orangeNum = 10;' },
+                    { code: 'let appleNum = 10;\nlet orangeNum = 10;\nif (appleNum > orangeNum) {\n  console.log("The number of apples and oranges is the same.");\n} else {\n  console.log("The number of apples and oranges is not the same.");\n}' },
+                    { code: 'if (appleNum > orangeNum) {\n  console.log("The number of apples and oranges is the same.");\n} else {\n  console.log("The number of apples and oranges is not the same.");\n}\nlet appleNum = 10;\nlet orangeNum = 10;' },
+                    { code: 'let appleNum = 10;\nlet orangeNum = 10;\nif (appleNum == orangeNum) {\n  console.log("The number of apples and oranges is the same.");\n} else {\n  console.log("The number of apples and oranges is not the same.");\n}' }
+                ],
+                correctAnswer: 3
+            },
+            // Q20
+            {
+                id: 20,
+                title: "السؤال 20",
+                text: "حدد البرنامج الذي يقوم بإخراج النص: Discounts are available.",
+                targetOutput: "Discounts are available.",
+                options: [
+                    { code: 'if (visitNumber > 3) {\n  console.log("Discounts are available.");\n} else {\n  console.log("Regular price.");\n}\nlet visitNumber = 5;' },
+                    { code: 'let visitNumber = 5;\nif (visitNumber > 3) {\n  console.log("Discounts are available.");\n} else {\n  console.log("Regular price.");\n}' },
+                    { code: 'if (visitNumber < 3) {\n  console.log("Discounts are available.");\n} else {\n  console.log("Regular price.");\n}\nlet visitNumber = 5;' },
+                    { code: 'let visitNumber = 5;\nif (visitNumber < 3) {\n  console.log("Discounts are available.");\n} else {\n  console.log("Regular price.");\n}' }
+                ],
+                correctAnswer: 1
+            }
+        ];
+
+        let currentQIndex = 0;
+        let selectedAnswers = {};
+        let timerTime = 40 * 60;
+
+        window.onload = function() {
+            loadQuestion(currentQIndex);
+            startTimer();
+            updateNavButtons();
+        };
+
+        function loadQuestion(index) {
+            currentQIndex = index;
+            const q = questions[index];
+            document.getElementById('q-title').innerText = q.title;
+            document.getElementById('q-text').innerText = q.text;
+            document.getElementById('q-output').innerText = q.targetOutput;
+            document.getElementById('q-counter').innerText = `${index + 1} / ${questions.length}`;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = ''; 
+
+            q.options.forEach((opt, i) => {
+                const card = document.createElement('div');
+                const isSelected = selectedAnswers[index] === i ? 'selected' : '';
+                card.className = `option-card ${isSelected}`;
+                card.onclick = () => selectOption(i, card);
+                card.innerHTML = `
+                    <div class="opt-number-strip">
+                        <span>${i + 1}</span>
+                        <div class="radio-check"></div>
+                    </div>
+                    <div class="opt-code">
+                        <pre>${opt.code}</pre>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            updateNavButtons();
+            window.scrollTo(0, 0);
+        }
+
+        function selectOption(optionIndex, cardElement) {
+            const allCards = document.querySelectorAll('.option-card');
+            allCards.forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            selectedAnswers[currentQIndex] = optionIndex;
+        }
+
+        function nextQuestion() {
+            if (currentQIndex < questions.length - 1) {
+                currentQIndex++;
+                loadQuestion(currentQIndex);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                loadQuestion(currentQIndex);
+            }
+        }
+
+        function updateNavButtons() {
+            document.getElementById('btn-prev').disabled = (currentQIndex === 0);
+            if (currentQIndex === questions.length - 1) {
+                document.getElementById('btn-next').disabled = true;
+                document.getElementById('btn-next').style.opacity = '0.5';
+            } else {
+                document.getElementById('btn-next').disabled = false;
+                document.getElementById('btn-next').style.opacity = '1';
+            }
+        }
+
+        function startTimer() {
+            const timerEl = document.getElementById('timer');
+            const interval = setInterval(() => {
+                let m = Math.floor(timerTime / 60);
+                let s = timerTime % 60;
+                let mStr = m < 10 ? '0' + m : m;
+                let sStr = s < 10 ? '0' + s : s;
+                timerEl.innerText = `${mStr}:${sStr}`;
+                timerTime--;
+                if (timerTime < 0) {
+                    clearInterval(interval);
+                    showConfirmModal();
+                }
+            }, 1000);
+        }
+
+        function toggleQuestionList() {
+            const modal = document.getElementById('questionListModal');
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            } else {
+                renderQuestionList();
+                modal.style.display = 'flex';
+            }
+        }
+
+        function renderQuestionList() {
+            const container = document.getElementById('listItemsContainer');
+            container.innerHTML = ''; 
+
+            questions.forEach((q, index) => {
+                const isAnswered = selectedAnswers[index] !== undefined;
+                const statusText = isAnswered ? 'تمت الإجابة' : 'لم يتم الرد';
+                const statusClass = isAnswered ? 'status-answered' : 'status-unanswered';
+
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.onclick = () => { loadQuestion(index); toggleQuestionList(); };
+
+                item.innerHTML = `
+                    <span class="item-status ${statusClass}">${statusText}</span>
+                    <span class="item-q-name">${q.title}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function showConfirmModal() {
+            document.getElementById('questionListModal').style.display = 'none';
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        function finalizeExam() {
+            document.getElementById('confirmModal').style.display = 'none';
+            let score = 0;
+            questions.forEach((q, i) => {
+                if (selectedAnswers[i] === q.correctAnswer) score++;
+            });
+            const scoreDiv = document.getElementById('finalScoreDisplay');
+            scoreDiv.style.display = 'block';
+            scoreDiv.innerHTML = `النتيجة النهائية: ${score} من ${questions.length} (${Math.round((score/questions.length)*100)}%)`;
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        function closeSuccessModal() {
+            location.reload(); 
+        }
+    </script>
+</body>
+</html>
