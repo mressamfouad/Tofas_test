@@ -81,6 +81,13 @@
         color: #ffea00;
     }
 
+    .contact-info {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #ddd;
+        line-height: 1.6;
+    }
+
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
@@ -95,10 +102,15 @@
 
     <input type="text" id="codeInput" placeholder="أدخل كود الدخول">
     <button onclick="checkCode()">دخول</button>
+    
+    <div class="contact-info">
+        للإشتراك و الحصول على كود الدخول برجاء التواصل واتس على رقم <br>
+        <span style="color: #7aff7a; font-weight: bold; font-size: 16px;">01033424624</span>
+    </div>
+
     <p id="msg"></p>
 </div>
 
-<!-- Firebase Script (صحيح 100%) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
