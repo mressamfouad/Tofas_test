@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الصفحة الرئيسية - الامتحانات</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+
+        :root {
+            --header-bg: #0b2447;
+            --bg-color: #f0f2f5;
+            --teal-btn: #4db6ac;
+            --blue-selected: #1976d2;
+            --text-color: #333;
+            --card-hover: #e3f2fd;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- الشريط العلوي --- */
+        .top-bar {
+            height: 70px;
+            background-color: var(--header-bg);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo-img {
+            height: 50px;
+            width: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            background-color: white;
+            padding: 2px;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 1px; }
+        .logo span { color: #ff007f; }
+
+        .btn-logout {
+            background-color: transparent;
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: 0.3s;
+        }
+        .btn-logout:hover { background-color: rgba(255,255,255,0.1); border-color: white; }
+
+        /* --- حاوية الكروت --- */
+        .main-container {
+            flex: 1;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 50px;
+            color: var(--header-bg);
+        }
+
+        .main-brand-logo {
+            width: 150px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
+            background-color: white;
+            padding: 5px;
+        }
+
+        .welcome-text h2 { font-size: 2rem; margin-bottom: 10px; }
+        .welcome-text p { color: #666; font-size: 1.1rem; }
+
+        /* الشبكة المعدلة لثلاثة كروت */
+        .exams-grid {
+            display: grid;
+            /* تجعل الكروت تتمدد بالتساوي، بحد أدنى 300 بكسل */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            justify-content: center;
+            /* تحديد أقصى عرض للشبكة لكي لا تصبح الكروت عريضة جداً */
+            max-width: 1100px; 
+            margin: 0 auto;
+        }
+
+        /* --- تصميم كرت الاختبار --- */
+        .exam-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%; /* لتوحيد الارتفاع */
+        }
+
+        .exam-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: var(--blue-selected);
+        }
+
+        .icon-circle {
+            width: 70px; height: 70px;
+            background-color: #e3f2fd;
+            color: var(--header-bg);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 20px auto;
+        }
+
+        .exam-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 10px; color: #333; }
+        .exam-desc { font-size: 0.95rem; color: #777; margin-bottom: 25px; line-height: 1.5; }
+
+        .btn-start {
+            background-color: var(--header-bg);
+            color: white;
+            border: none;
+            padding: 10px 40px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: 0.2s;
+            width: 100%;
+            margin-top: auto; /* يدفع الزر للأسفل دائماً */
+        }
+        .btn-start:hover { background-color: var(--blue-selected); }
+
+        .exam-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+            background: linear-gradient(90deg, var(--header-bg), var(--teal-btn));
+        }
+
+        @media (max-width: 768px) {
+            .welcome-text h2 { font-size: 1.5rem; }
+            .main-brand-logo { width: 120px; }
+            .exams-grid { grid-template-columns: 1fr; } /* عمود واحد في الموبايل */
+        }
+    </style>
+</head>
+<body>
+
+    <script>
+        if (sessionStorage.getItem("access") !== "ok") {
+            window.location.href = "login.html";
+        }
+    </script>
+
+    <header class="top-bar">
+        <div class="header-right">
+            <img src="Logo1.jpg" alt="Logo" class="header-logo-img">
+            <div class="logo">Essam <span>Fouad</span></div>
+        </div>
+        
+        <button class="btn-logout" onclick="logout()">تسجيل خروج</button>
+    </header>
+
+    <div class="main-container">
+        <div class="welcome-text">
+            <img src="Logo1.jpg" alt="منصة الاختبارات" class="main-brand-logo">
+            <h2>مرحباً بك في منصة الاختبارات ( مستر / عصام فؤاد )</h2>
+            <p>اختر الاختبار الذي تود البدء فيه من القائمة أدناه</p>
+        </div>
+
+        <div class="exams-grid">
+            <div class="exam-card">
+                <div>
+                    <div class="icon-circle">📝</div>
+                    <h3 class="exam-title">الاختبار الأول</h3>
+                    <p class="exam-desc">المستوى الأول في برمجة جافا سكربت</p>
+                </div>
+                <button class="btn-start" onclick="goToExam('exam1.html')">بدء الاختبار</button>
+            </div>
+
+            <div class="exam-card">
+                <div>
+                    <div class="icon-circle">💻</div>
+                    <h3 class="exam-title">الاختبار الثاني</h3>
+                    <p class="exam-desc">المستوى الأول في برمجة جافا سكربت</p>
+                </div>
+                <button class="btn-start" onclick="goToExam('exam2.html')">بدء الاختبار</button>
+            </div>
+
+            <div class="exam-card">
+                <div>
+                    <div class="icon-circle">🔄</div>
+                    <h3 class="exam-title">الاختبار الثالث</h3>
+                    <p class="exam-desc">المستوى الأول في برمجة جافا سكربت</p>
+                </div>
+                <button class="btn-start" onclick="goToExam('exam3.html')">بدء الاختبار</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logout() {
+            sessionStorage.removeItem("access"); 
+            window.location.href = "login.html"; 
+        }
+
+        function goToExam(pageUrl) {
+            window.location.href = pageUrl;
+        }
+    </script>
+
+</body>
+</html>
