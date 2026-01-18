@@ -684,5 +684,42 @@
             window.location.replace("dashboard.html"); 
         }
     </script>
+<script>
+    // 1. منع الزر الأيمن للماوس (Right Click)
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        // يمكنك إظهار رسالة تحذيرية اختيارية
+        // alert("تم تعطيل هذه الوظيفة للحفاظ على سرية الاختبار");
+    });
+
+    // 2. منع اختصارات لوحة المفاتيح الشائعة للنسخ والفحص
+    document.onkeydown = function(e) {
+        // منع F12
+        if(event.keyCode == 123) {
+            return false;
+        }
+        // منع Ctrl+U (عرض المصدر)
+        if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+            return false;
+        }
+        // منع Ctrl+Shift+I (فحص العنصر)
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+            return false;
+        }
+        // منع Ctrl+Shift+J (فتح الكونسول)
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+            return false;
+        }
+        // منع Ctrl+Shift+C (فحص العنصر)
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) {
+            return false;
+        }
+        // منع Ctrl+S (حفظ الصفحة)
+        if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) {
+            return false;
+        }
+    }
+</script>
 </body>
 </html>
+
