@@ -276,6 +276,7 @@
         .end-exam-btn-large:hover { background-color: #52e0c0; }
 
         @media (max-width: 900px) {
+            /* 1. ترتيب الأعمدة (سبق وجوده) */
             .exam-container { flex-direction: column; }
             .question-panel { 
                 width: 100%; height: auto; position: relative; top: 0;
@@ -283,6 +284,43 @@
             }
             .options-panel { width: 100%; min-height: auto; }
             .question-list-content { max-width: 100%; position: fixed; }
+
+            /* --- 2. إصلاحات الشريط العلوي للموبايل --- */
+            
+            /* تقليل الحواش الداخلية للشريط */
+            .top-bar { padding: 0 5px; }
+
+            /* إخفاء رابط "تصميم مستر عصام" لتوفير مساحة */
+            .menu-link { display: none; }
+
+            /* إخفاء نص "قائمة الأسئلة" والإبقاء على الأيقونة فقط */
+            .menu-btn span:nth-child(2) { display: none; }
+
+            /* تصغير المسافات بين العناصر في المنتصف */
+            .bar-center > div { gap: 4px !important; }
+
+            /* تصغير حجم الأزرار والنصوص */
+            .btn {
+                padding: 4px 10px;
+                font-size: 0.8rem; /* خط أصغر */
+                border-radius: 15px;
+            }
+
+            /* تصغير حجم العداد والوقت */
+            .info-pill {
+                padding: 3px 8px;
+                font-size: 0.75rem;
+                gap: 4px;
+            }
+
+            /* زر إنهاء الاختبار */
+            .btn-finish {
+                padding: 4px 8px;
+                font-size: 0.75rem;
+            }
+            
+            /* إخفاء كلمة "السؤال" و "متبقى" للإبقاء على الأرقام فقط إذا لزم الأمر */
+            .info-pill span:nth-child(2) { display: none; }
         }
     </style>
 </head>
