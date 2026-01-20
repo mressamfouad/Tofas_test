@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Essam Fouad Exam System - Final V20</title>
+    <title>Essam Fouad Exam System - Secure V18</title>
     
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-
     <style>
         /* --- 1. إعدادات الخطوط والألوان --- */
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -33,7 +32,7 @@
             padding-top: var(--header-height);
         }
 
-        /* --- 2. الشريط العلوي --- */
+        /* --- 2. الشريط العلوي (مثبت) --- */
         .top-bar {
             height: var(--header-height);
             background-color: var(--header-bg);
@@ -50,7 +49,6 @@
         }
 
         .bar-right, .bar-left { display: flex; align-items: center; gap: 10px; }
-        .bar-center { display: flex; justify-content: center; flex: 1; }
         
         .menu-btn {
             background: none; border: none; color: white; font-size: 1.2rem;
@@ -247,7 +245,6 @@
             padding: 10px; background: #f0f7ff; border-radius: 8px; border: 1px solid #cce5ff;
         }
 
-        /* صندوق الأسئلة الخطأ */
         .wrong-answers-box {
             margin: 15px 0; padding: 15px; background-color: #ffebee;
             border: 1px solid #ffcdd2; color: #c62828; border-radius: 8px;
@@ -277,7 +274,8 @@
         }
         .end-exam-btn-large:hover { background-color: #52e0c0; }
 
-        @media (max-width: 900px) {
+       @media (max-width: 900px) {
+            /* 1. ترتيب الأعمدة (سبق وجوده) */
             .exam-container { flex-direction: column; }
             .question-panel { 
                 width: 100%; height: auto; position: relative; top: 0;
@@ -285,6 +283,43 @@
             }
             .options-panel { width: 100%; min-height: auto; }
             .question-list-content { max-width: 100%; position: fixed; }
+
+            /* --- 2. إصلاحات الشريط العلوي للموبايل --- */
+            
+            /* تقليل الحواش الداخلية للشريط */
+            .top-bar { padding: 0 5px; }
+
+            /* إخفاء رابط "تصميم مستر عصام" لتوفير مساحة */
+            .menu-link { display: none; }
+
+            /* إخفاء نص "قائمة الأسئلة" والإبقاء على الأيقونة فقط */
+            .menu-btn span:nth-child(2) { display: none; }
+
+            /* تصغير المسافات بين العناصر في المنتصف */
+            .bar-center > div { gap: 4px !important; }
+
+            /* تصغير حجم الأزرار والنصوص */
+            .btn {
+                padding: 4px 10px;
+                font-size: 0.8rem; /* خط أصغر */
+                border-radius: 15px;
+            }
+
+            /* تصغير حجم العداد والوقت */
+            .info-pill {
+                padding: 3px 8px;
+                font-size: 0.75rem;
+                gap: 4px;
+            }
+
+            /* زر إنهاء الاختبار */
+            .btn-finish {
+                padding: 4px 8px;
+                font-size: 0.75rem;
+            }
+            
+            /* إخفاء كلمة "السؤال" و "متبقى" للإبقاء على الأرقام فقط إذا لزم الأمر */
+            .info-pill span:nth-child(2) { display: none; }
         }
     </style>
 </head>
@@ -296,7 +331,7 @@
         </div>
         <div class="bar-center">
             <div style="display:flex; gap:10px;">
-                <a class="menu-link" href="https://youtu.be/KOXHB0epeTs" target="_blank">تصميم مستر عصام فؤاد</a> &nbsp;&nbsp;&nbsp;&nbsp;
+                <a class="menu-link" href="https://youtu.be/7v9n-Yl-TSI" target="_blank">تصميم مستر عصام فؤاد</a> &nbsp;&nbsp;&nbsp;&nbsp;
                 <button class="btn btn-back" id="btn-prev" onclick="prevQuestion()" disabled>رجوع</button>
                 <div class="info-pill"><span id="q-counter">1 / 20</span><span>📝 السؤال</span></div>
                 <div class="info-pill"><span id="timer">40:00</span><span>⏱ متبقى</span></div>
@@ -312,7 +347,7 @@
         <div class="question-panel">
             <div class="q-header-row">
                 <span class="q-title" id="q-title">السؤال 1</span>
-                <button class="explain-btn" onclick="window.open('https://youtu.be/KOXHB0epeTs', '_blank')">عرض شرح الكود</button>
+                <button class="explain-btn" onclick="window.open('https://youtu.be/7v9n-Yl-TSI', '_blank')">عرض شرح الكود</button>
             </div>
             <p class="q-text" id="q-text">...</p>
             <div class="output-box" id="q-output">...</div>
@@ -369,11 +404,13 @@
     <script>
         function checkSession() {
             if (sessionStorage.getItem("access") !== "ok") {
-                window.location.replace("dashboard.html");
+                window.location.replace("login.html");
             }
         }
         checkSession();
 
+        // عند العودة بزر Back، المتصفح يحمل الصفحة من الذاكرة المؤقتة (bfcache)
+        // هذا الكود يتأكد من إعادة التحقق عند حدوث ذلك
         window.onpageshow = function(event) {
             if (event.persisted) {
                 checkSession();
@@ -381,37 +418,57 @@
         };
     </script>
 
-    <script>
-        // --- الأسئلة (20 سؤال) المستخرجة من الصور ---
+<script>
+        // --- 20 سؤال مطابقين للصور بدقة (Q1-Q10 القديمة + Q11-Q20 الجديدة) ---
         const questions = [
-            { id: 1, title: "السؤال 1", text: "حدد البرنامج الذي يقوم بإخراج الرقم: 3", targetOutput: "3", options: [{ code: 'let num1 = 18;\nlet num2 = 15;\nnum1 / num2;' }, { code: 'let num1 = 18;\nlet num2 = 15;\nconsole.log(num1 / num2);' }, { code: 'let num1 = 18;\nlet num2 = 15;\nnum1 - num2;' }, { code: 'let num1 = 18;\nlet num2 = 15;\nconsole.log(num1 - num2);' }], correctAnswer: 3 },
-            { id: 2, title: "السؤال 2", text: "حدد البرنامج الذي يقوم بإخراج النص: Banana", targetOutput: "Banana", options: [{ code: 'let fruit > "Banana";\nfruit;' }, { code: 'let fruit > "Banana";\nconsole.log(fruit);' }, { code: 'let fruit = "Banana";\nfruit;' }, { code: 'let fruit = "Banana";\nconsole.log(fruit);' }], correctAnswer: 3 },
-            { id: 3, title: "السؤال 3", text: "حدد البرنامج الذي يقوم بإخراج التالي:", targetOutput: "Train\nBus", options: [{ code: 'let vehicle = "Train";\nconsole.log(vehicle);\nvehicle = "Bus";\nconsole.log(vehicle);' }, { code: 'let vehicle = "Train";\nvehicle;\nvehicle < "Bus";\nvehicle;' }, { code: 'let vehicle = "Train";\nconsole.log(vehicle);\nvehicle < "Bus";\nconsole.log(vehicle);' }, { code: 'let vehicle = "Train";\nvehicle;\nvehicle = "Bus";\nvehicle;' }], correctAnswer: 0 },
-            { id: 4, title: "السؤال 4", text: "حدد البرنامج الذي يقوم بإخراج الرقم: 200", targetOutput: "200", options: [{ code: 'let num = 150;\nnum = 50;\nconsole.log(num);' }, { code: 'let num = 150;\nnum + 50;\nconsole.log(num);' }, { code: 'let num = 150;\nnum = num + 50;\nconsole.log(num);' }, { code: 'let num = 150;\nnum = num - 50;\nconsole.log(num);' }], correctAnswer: 2 },
-            { id: 5, title: "السؤال 5", text: "حدد البرنامج الذي يقوم بإخراج النص: Over capacity", targetOutput: "Over capacity", options: [{ code: 'let passengers = 12;\nlet additionalPassengers = 4;\nlet capacity = 15;\nelse ((passengers + additionalPassengers) > capacity) {\n  console.log("Over capacity");\n} else {\n  console.log("Starting to move.");\n}' }, { code: 'let passengers = 12;\nlet additionalPassengers = 4;\nlet capacity = 15;\nelse ((passengers / additionalPassengers) > capacity) {\n  console.log("Over capacity");\n} else {\n  console.log("Starting to move.");\n}' }, { code: 'let passengers = 12;\nlet additionalPassengers = 4;\nlet capacity = 15;\nif ((passengers / additionalPassengers) > capacity) {\n  console.log("Over capacity");\n} else {\n  console.log("Starting to move.");\n}' }, { code: 'let passengers = 12;\nlet additionalPassengers = 4;\nlet capacity = 15;\nif ((passengers + additionalPassengers) > capacity) {\n  console.log("Over capacity");\n} else {\n  console.log("Starting to move.");\n}' }], correctAnswer: 3 },
-            { id: 6, title: "السؤال 6", text: "حدد البرنامج الذي يقوم بإخراج النص: My friend is older.", targetOutput: "My friend is older.", options: [{ code: 'let myAge = 10;\nlet friendAge = 12;\nif (myAge > friendAge) {\n  console.log("I\'m older.");\n} else {\n  console.log("My friend is older.");\n}' }, { code: 'let myAge == 10;\nlet friendAge == 12;\nif (myAge > friendAge) {\n  console.log("I\'m older.");\n} else {\n  console.log("My friend is older.");\n}' }, { code: 'let myAge = 10;\nlet friendAge = 12;\nif (myAge > friendAge) {\n  console.log("I\'m older.");\n} else {\n  console.log("My friend is older.");\n}' }, { code: 'let myAge == 10;\nlet friendAge == 12;\nif (myAge > friendAge) {\n  console.log("I\'m older.");\n} else {\n  console.log("My friend is older.");\n}' }], correctAnswer: 0 },
-            { id: 7, title: "السؤال 7", text: "حدد البرنامج الذي يقوم بإخراج النص: Charging is not needed.", targetOutput: "Charging is not needed.", options: [{ code: 'let battery = 50;\nif (battery < 20) {\n  console.log("Charging is recommended.");\n} else {\n  console.log("Charging is not needed.");\n}' }, { code: 'let battery = 50;\nif {\n  console.log("Charging is recommended.");\n} else {\n  console.log("Charging is not needed.");\n}' }, { code: 'let battery = 50;\nif (battery < 20) {\n  console.log("Charging is recommended.");\n} if {\n  console.log("Charging is not needed.");\n}' }, { code: 'let battery = 50;\nif {\n  console.log("Charging is recommended.");\n} if {\n  console.log("Charging is not needed.");\n}' }], correctAnswer: 0 },
-            { id: 8, title: "السؤال 8", text: "حدد البرنامج الذي يقوم بإخراج التالي:", targetOutput: "Using one coupon.\n1990", options: [{ code: 'let productPrice = 2000;\nlet couponNum = 1;\nif (couponNum == 2) {\n  console.log("Using two coupons.");\n  productPrice = productPrice - 30;\n} else if {\n  console.log("Using one coupon.");\n  productPrice = productPrice - 10;\n} else {\n  console.log("Not using any coupons.");\n}\nconsole.log("The prices are as follows.");\nconsole.log(productPrice);' }, { code: 'let productPrice = 2000;\nlet couponNum = 1;\nif (couponNum == 2) {\n  console.log("Using two coupons.");\n  productPrice = productPrice - 30;\n} else if (couponNum == 1) {\n  console.log("Using one coupon.");\n  productPrice = productPrice - 10;\n} else {\n  console.log("Not using any coupons.");\n}\nconsole.log("The prices are as follows.");\nconsole.log(productPrice);' }, { code: 'let productPrice = 2000;\nlet couponNum = 1;\nif (couponNum == 2) {\n  console.log("Using two coupons.");\n  productPrice = productPrice - 30;\n} else if (couponNum == 1) {\n  console.log("Using one coupon.");\n  productPrice = productPrice - 10;\n} else {\n  console.log("Not using any coupons.");\n}\nconsole.log("The prices are as follows.");\nconsole.log(productPrice);' }, { code: 'let productPrice = 2000;\nlet couponNum = 1;\nif (couponNum == 2) {\n  console.log("Using two coupons.");\n  productPrice = productPrice - 30;\n} else if {\n  console.log("Using one coupon.");\n  productPrice = productPrice - 10;\n} else {\n  console.log("Not using any coupons.");\n}\nconsole.log("The prices are as follows.");\nconsole.log(productPrice);' }], correctAnswer: 1 },
-            { id: 9, title: "السؤال 9", text: "حدد البرنامج الذي يقوم بإخراج النص: We rent out large meeting rooms.", targetOutput: "We rent out large meeting rooms.", options: [{ code: 'let peopleNum = 25;\nif (peopleNum < 10) {\n  console.log("We rent out small meeting rooms.");\n} else if (peopleNum < 30) {\n  console.log("We rent out large meeting rooms.");\n} else {\n  console.log("No suitable meeting rooms are available.");\n}' }, { code: 'let peopleNum = 25;\nif else (peopleNum < 10) {\n  console.log("We rent out small meeting rooms.");\n} else (peopleNum < 30) {\n  console.log("We rent out large meeting rooms.");\n} else {\n  console.log("No suitable meeting rooms are available.");\n}' }, { code: 'let peopleNum = 25;\nif else (peopleNum < 10) {\n  console.log("We rent out small meeting rooms.");\n} else if (peopleNum < 30) {\n  console.log("We rent out large meeting rooms.");\n} else {\n  console.log("No suitable meeting rooms are available.");\n}' }, { code: 'let peopleNum = 25;\nif (peopleNum < 10) {\n  console.log("We rent out small meeting rooms.");\n} else (peopleNum < 30) {\n  console.log("We rent out large meeting rooms.");\n} else {\n  console.log("No suitable meeting rooms are available.");\n}' }], correctAnswer: 0 },
-            { id: 10, title: "السؤال 10", text: "حدد البرنامج الذي يقوم بإخراج التالي:", targetOutput: "Today is a holiday.\nLet's play outside.", options: [{ code: 'let dayOfWeek = "Sunday";\nlet weather = "Cloudy";\nif (dayOfWeek == "Saturday") {\n  console.log("Today is a holiday.");\n} else if (dayOfWeek == "Sunday") {\n  console.log("Today is a holiday.");\n}\nif (weather == "Rainy") {\n  console.log("Let\'s play indoors.");\n} else {\n  console.log("Let\'s play outside.");\n}' }, { code: 'let dayOfWeek = "Sunday";\nlet weather = "Cloudy";\nif (dayOfWeek == "Saturday") {\n  console.log("Today is a holiday.");\n} if else (dayOfWeek == "Sunday") {\n  console.log("Today is a holiday.");\n}\nif (weather == "Rainy") {\n  console.log("Let\'s play indoors.");\n} if {\n  console.log("Let\'s play outside.");\n}' }, { code: 'let dayOfWeek = "Sunday";\nlet weather = "Cloudy";\nif (dayOfWeek == "Saturday") {\n  console.log("Today is a holiday.");\n} if else (dayOfWeek == "Sunday") {\n  console.log("Today is a holiday.");\n}\nif (weather == "Rainy") {\n  console.log("Let\'s play indoors.");\n} else {\n  console.log("Let\'s play outside.");\n}' }, { code: 'let dayOfWeek = "Sunday";\nlet weather = "Cloudy";\nif (dayOfWeek == "Saturday") {\n  console.log("Today is a holiday.");\n} else if (dayOfWeek == "Sunday") {\n  console.log("Today is a holiday.");\n}\nif (weather == "Rainy") {\n  console.log("Let\'s play indoors.");\n} if {\n  console.log("Let\'s play outside.");\n}' }], correctAnswer: 0 },
-            { id: 11, title: "السؤال 11", text: "حدد البرنامج الذي يقوم بإخراج النص: Fuel is full.", targetOutput: "Fuel is full.", options: [{ code: 'let fuel 100;\nif (fuel == 100) {\n  console.log("Fuel is full.");\n}' }, { code: 'let fuel 100;\nif (fuel > 100) {\n  console.log("Fuel is full.");\n}' }, { code: 'let fuel = 100;\nif (fuel > 100) {\n  console.log("Fuel is full.");\n}' }, { code: 'let fuel = 100;\nif (fuel == 100) {\n  console.log("Fuel is full.");\n}' }], correctAnswer: 3 },
-            { id: 12, title: "السؤال 12", text: "حدد البرنامج الذي يقوم بإخراج النص: Please charge.", targetOutput: "Please charge.", options: [{ code: 'let batteryPower = "Empty";\nif (batteryPower == "Full") {\n  console.log("No need to charge.");\n} if {\n  console.log("Please charge.");\n}' }, { code: 'let batteryPower = "Empty";\nif (batteryPower = "Full") {\n  console.log("No need to charge.");\n} if {\n  console.log("Please charge.");\n}' }, { code: 'let batteryPower = "Empty";\nif (batteryPower == "Full") {\n  console.log("No need to charge.");\n} else {\n  console.log("Please charge.");\n}' }, { code: 'let batteryPower = "Empty";\nif (batteryPower = "Full") {\n  console.log("No need to charge.");\n} else {\n  console.log("Please charge.");\n}' }], correctAnswer: 2 },
-            { id: 13, title: "السؤال 13", text: "حدد البرنامج الذي يقوم بإخراج النص: That will be 200 yen.", targetOutput: "That will be 200 yen.", options: [{ code: 'let order = "Orange juice";\nif (order > "Apple juice") {\n  console.log("That will be 250 yen.");\n} else if (order > "Orange juice") {\n  console.log("That will be 200 yen.");\n} else {\n  console.log("Currently out of stock.");\n}' }, { code: 'let order = "Orange juice";\nif (order == "Apple juice") {\n  console.log("That will be 250 yen.");\n} else if (order == "Orange juice") {\n  console.log("That will be 200 yen.");\n} else {\n  console.log("Currently out of stock.");\n}' }, { code: 'let order = "Orange juice";\nif (order > "Apple juice") {\n  console.log("That will be 250 yen.");\n} else (order > "Orange juice") {\n  console.log("That will be 200 yen.");\n} else {\n  console.log("Currently out of stock.");\n}' }, { code: 'let order = "Orange juice";\nif (order == "Apple juice") {\n  console.log("That will be 250 yen.");\n} else (order == "Orange juice") {\n  console.log("That will be 200 yen.");\n} else {\n  console.log("Currently out of stock.");\n}' }], correctAnswer: 1 },
-            { id: 14, title: "السؤال 14", text: "حدد البرنامج الذي يقوم بإخراج التالي:", targetOutput: "1500\nYou don't have enough money.", options: [{ code: 'let orangePrice = 300;\nlet orangeNum = 5;\nlet totalCost = 0;\ntotalCost = orangePrice * orangeNum;\nconsole.log(totalCost);\nif (totalCost < 1000) {\n  console.log("You can buy it.");\n} else {\n  console.log("You don\'t have enough money.");\n}' }, { code: 'let orangePrice = 300;\nlet orangeNum = 5;\nlet totalCost = 0;\ntotalCost = orangePrice * orangeNum;\nconsole.log(totalCost);\nif (totalCost > 1000) {\n  console.log("You can buy it.");\n} else {\n  console.log("You don\'t have enough money.");\n}' }, { code: 'let orangePrice = 300;\nlet orangeNum = 5;\nlet totalCost = 0;\ntotalCost = orangePrice * orangeNum;\nconsole.log(totalCost);\nif (totalCost < 1000) {\n  console.log("You can buy it.");\n} else {\n  console.log("You don\'t have enough money.");\n}' }, { code: 'let orangePrice = 300;\nlet orangeNum = 5;\nlet totalCost = 0;\ntotalCost = orangePrice * orangeNum;\nconsole.log(totalCost);\nif (totalCost > 1000) {\n  console.log("You can buy it.");\n} else {\n  console.log("You don\'t have enough money.");\n}' }], correctAnswer: 0 },
-            { id: 15, title: "السؤال 15", text: "حدد البرنامج الذي يقوم بإخراج النص: Proper size", targetOutput: "Proper size", options: [{ code: 'let size => 70;\nif (size > 100) {\n  console.log("Proper size");\n} else {\n  console.log("Over size limit");\n}' }, { code: 'let size = 70;\nif (size < 100) {\n  console.log("Proper size");\n} else {\n  console.log("Over size limit");\n}' }, { code: 'let size = 70;\nif (size > 100) {\n  console.log("Proper size");\n} else {\n  console.log("Over size limit");\n}' }, { code: 'let size => 70;\nif (size < 100) {\n  console.log("Proper size");\n} else {\n  console.log("Over size limit");\n}' }], correctAnswer: 1 },
-            { id: 16, title: "السؤال 16", text: "حدد البرنامج الذي يقوم بإخراج النص: Reservations are available.", targetOutput: "Reservations are available.", options: [{ code: 'let peopleNumLimit = 20;\nlet reservationPeopleNum = 10;\nelse (peopleNumLimit < reservationPeopleNum) {\n  console.log("Reservations are available.");\n} else {\n  console.log("Reservations are not available.");\n}' }, { code: 'let peopleNumLimit = 20;\nlet reservationPeopleNum = 10;\nif (peopleNumLimit > reservationPeopleNum) {\n  console.log("Reservations are available.");\n} else {\n  console.log("Reservations are not available.");\n}' }, { code: 'let peopleNumLimit = 20;\nlet reservationPeopleNum = 10;\nif (peopleNumLimit < reservationPeopleNum) {\n  console.log("Reservations are available.");\n} else {\n  console.log("Reservations are not available.");\n}' }, { code: 'let peopleNumLimit = 20;\nlet reservationPeopleNum = 10;\nelse (peopleNumLimit > reservationPeopleNum) {\n  console.log("Reservations are available.");\n} else {\n  console.log("Reservations are not available.");\n}' }], correctAnswer: 1 },
-            { id: 17, title: "السؤال 17", text: "حدد البرنامج الذي يقوم بإخراج النص: I am going to school.", targetOutput: "I am going to school.", options: [{ code: 'if (timeZone == 8) {\n  "I am going to school.";\n}\nlet timeZone = 8;' }, { code: 'let timeZone = 8;\nif (timeZone == 8) {\n  "I am going to school.";\n}' }, { code: 'if (timeZone == 8) {\n  console.log("I am going to school.");\n}\nlet timeZone = 8;' }, { code: 'let timeZone = 8;\nif (timeZone == 8) {\n  console.log("I am going to school.");\n}' }], correctAnswer: 3 },
-            { id: 18, title: "السؤال 18", text: "حدد البرنامج الذي يقوم بإخراج التالي:", targetOutput: "Your savings have increased.\n200,000 yen", options: [{ code: 'let savingBalance = "100,000 yen";\nsavingBalance("200,000 yen");\nconsole.log("Your savings have increased.");\nconsole.log(savingBalance);' }, { code: 'let savingBalance = "100,000 yen";\nconsole.log("Your savings have increased.");\nconsole.log(savingBalance);\nsavingBalance("200,000 yen");' }, { code: 'let savingBalance = "100,000 yen";\nconsole.log("Your savings have increased.");\nconsole.log(savingBalance);\nsavingBalance = "200,000 yen";' }, { code: 'let savingBalance = "100,000 yen";\nsavingBalance = "200,000 yen";\nconsole.log("Your savings have increased.");\nconsole.log(savingBalance);' }], correctAnswer: 3 },
-            { id: 19, title: "السؤال 19", text: "حدد البرنامج الذي يقوم بإخراج النص: The number of apples and oranges is the same.", targetOutput: "The number of apples and oranges is the same.", options: [{ code: 'if (appleNum == orangeNum) {\n  console.log("The number of apples and oranges is the same.");\n} else {\n  console.log("The number of apples and oranges is not the same.");\n}\nlet appleNum = 10;\nlet orangeNum = 10;' }, { code: 'let appleNum = 10;\nlet orangeNum = 10;\nif (appleNum > orangeNum) {\n  console.log("The number of apples and oranges is the same.");\n} else {\n  console.log("The number of apples and oranges is not the same.");\n}' }, { code: 'if (appleNum > orangeNum) {\n  console.log("The number of apples and oranges is the same.");\n} else {\n  console.log("The number of apples and oranges is not the same.");\n}\nlet appleNum = 10;\nlet orangeNum = 10;' }, { code: 'let appleNum = 10;\nlet orangeNum = 10;\nif (appleNum == orangeNum) {\n  console.log("The number of apples and oranges is the same.");\n} else {\n  console.log("The number of apples and oranges is not the same.");\n}' }], correctAnswer: 3 },
-            { id: 20, title: "السؤال 20", text: "حدد البرنامج الذي يقوم بإخراج النص: Discounts are available.", targetOutput: "Discounts are available.", options: [{ code: 'if (visitNumber > 3) {\n  console.log("Discounts are available.");\n} else {\n  console.log("Regular price.");\n}\nlet visitNumber = 5;' }, { code: 'let visitNumber = 5;\nif (visitNumber > 3) {\n  console.log("Discounts are available.");\n} else {\n  console.log("Regular price.");\n}' }, { code: 'if (visitNumber < 3) {\n  console.log("Discounts are available.");\n} else {\n  console.log("Regular price.");\n}\nlet visitNumber = 5;' }, { code: 'let visitNumber = 5;\nif (visitNumber < 3) {\n  console.log("Discounts are available.");\n} else {\n  console.log("Regular price.");\n}' }], correctAnswer: 1 }
+            // Q1
+            { id: 1, title: "السؤال 1", text: "حدد البرنامج الذي يقوم بإخراج ما يلي:", targetOutput: "تم تحديث نتيجة الرياضيات.\nالنتيجة الإجمالية هي كما يلي:\n180", options: [{ code: 'let mathScore = 90;\nlet englishScore = 80;\nlet totalScore = 0;\n\nconsole.log("تم تحديث نتيجة الرياضيات.");\nmathScore > 100;\ntotalScore > mathScore + englishScore;\nconsole.log("النتيجة الإجمالية هي كما يلي:");\nconsole.log(totalScore);' }, { code: 'let mathScore = 90;\nlet englishScore = 80;\nlet totalScore = 0;\n\nconsole.log("تم تحديث نتيجة الرياضيات.");\nmathScore = 100;\ntotalScore = mathScore - englishScore;\nconsole.log("النتيجة الإجمالية هي كما يلي:");\nconsole.log(totalScore);' }, { code: 'let mathScore = 90;\nlet englishScore = 80;\nlet totalScore = 0;\n\nconsole.log("تم تحديث نتيجة الرياضيات.");\nmathScore = 100;\ntotalScore = mathScore + englishScore;\nconsole.log("النتيجة الإجمالية هي كما يلي:");\nconsole.log(totalScore);' }, { code: 'let mathScore = 90;\nlet englishScore = 80;\nlet totalScore = 0;\n\nconsole.log("تم تحديث نتيجة الرياضيات.");\nmathScore > 100;\ntotalScore > mathScore - englishScore;\nconsole.log("النتيجة الإجمالية هي كما يلي:");\nconsole.log(totalScore);' }], correctAnswer: 2 },
+            // Q2
+            { id: 2, title: "السؤال 2", text: "حدد البرنامج الذي يقوم بإخراج النص: اجتاز", targetOutput: "اجتاز", options: [{ code: 'let score = 65;\nlet borderScore = 50;\n\nif (score < borderScore) {\n  console.log("لم يجتاز");\n} else if {\n  console.log("اجتاز");\n}' }, { code: 'let score = 65;\nlet borderScore = 50;\n\nif (score > borderScore) {\n  console.log("لم يجتاز");\n} else if {\n  console.log("اجتاز");\n}' }, { code: 'let score = 65;\nlet borderScore = 50;\n\nif (score < borderScore) {\n  console.log("لم يجتاز");\n} else {\n  console.log("اجتاز");\n}' }, { code: 'let score = 65;\nlet borderScore = 50;\n\nif (score > borderScore) {\n  console.log("لم يجتاز");\n} else {\n  console.log("اجتاز");\n}' }], correctAnswer: 2 },
+            // Q3
+            { id: 3, title: "السؤال 3", text: "حدد البرنامج الذي يقوم بإخراج ما يلي: أحسنت!", targetOutput: "أحسنت!", options: [{ code: 'let score = 10;\n\n(score == 10) {\n  "أحسنت!";\n}' }, { code: 'let score = 10;\n\nif (score == 10) {\n  console.log("أحسنت!");\n}' }, { code: 'let score = 10;\n\n(score == 10) {\n  console.log("أحسنت!");\n}' }, { code: 'let score = 10;\n\nif (score == 10) {\n  "أحسنت!";\n}' }], correctAnswer: 1 },
+            // Q4
+            { id: 4, title: "السؤال 4", text: "حدد البرنامج الذي يقوم بإخراج ما يلي: 400", targetOutput: "بعد الساعة 7 مساءً، سيبدأ وقت الخصومات.\n400", options: [{ code: 'let foodPrice = 500;\nlet time = 21;\n\nif {\n  console.log("بعد الساعة 7 مساءً، سيبدأ وقت الخصومات.");\n  foodPrice = foodPrice + 100;\n  console.log(foodPrice);\n}' }, { code: 'let foodPrice = 500;\nlet time = 21;\n\nif (time >= 19) {\n  console.log("بعد الساعة 7 مساءً، سيبدأ وقت الخصومات.");\n  foodPrice = foodPrice - 100;\n  console.log(foodPrice);\n}' }, { code: 'let foodPrice = 500;\nlet time = 21;\n\nif (time >= 19) {\n  console.log("بعد الساعة 7 مساءً، سيبدأ وقت الخصومات.");\n  foodPrice = foodPrice + 100;\n  console.log(foodPrice);\n}' }, { code: 'let foodPrice = 500;\nlet time = 21;\n\nif {\n  console.log("بعد الساعة 7 مساءً، سيبدأ وقت الخصومات.");\n  foodPrice = foodPrice - 100;\n  console.log(foodPrice);\n}' }], correctAnswer: 1 },
+            // Q5
+            { id: 5, title: "السؤال 5", text: "حدد البرنامج الذي يقوم بإخراج النص: صديقي أكبر سناً", targetOutput: "صديقي أكبر سناً", options: [{ code: 'let myAge = 10;\nlet friendAge = 12;\n\nif (myAge > friendAge) {\n  console.log("أنا أكبر سناً.");\n  else {\n  console.log("صديقي أكبر سناً");\n  }\n}' }, { code: 'let myAge == 10;\nlet friendAge == 12;\n\nif (myAge > friendAge) {\n  console.log("أنا أكبر سناً");\n} else {\n  console.log("صديقي أكبر سناً");\n}' }, { code: 'let myAge = 10;\nlet friendAge = 12;\n\nif (myAge > friendAge) {\n  console.log("أنا أكبر سناً");\n} else {\n  console.log("صديقي أكبر سناً");\n}' }, { code: 'let myAge == 10;\nlet friendAge == 12;\n\nif (myAge > friendAge) {\n  console.log("أنا أكبر سناً");\n  else {\n  console.log("صديقي أكبر سناً");\n  }\n}' }], correctAnswer: 2 },
+            // Q6
+            { id: 6, title: "السؤال 6", text: "حدد البرنامج الذي يقوم بإخراج النص: على الأرجح لا تحتاج إلى مظلة", targetOutput: "على الأرجح لا تحتاج إلى مظلة", options: [{ code: 'let weather = "مشمس";\n\nif {\n  console.log("دعونا نحضر مظلة.");\n} else {\n  console.log("على الأرجح لا تحتاج إلى مظلة.");\n}' }, { code: 'let weather = "مشمس";\n\nif (weather == "ممطر") {\n  console.log("دعونا نحضر مظلة.");\n} else {\n  console.log("على الأرجح لا تحتاج إلى مظلة.");\n}' }, { code: 'let weather = "مشمس";\n\nif {\n  console.log("دعونا نحضر مظلة.");\n} if {\n  console.log("على الأرجح لا تحتاج إلى مظلة.");\n}' }, { code: 'let weather = "مشمس";\n\nif (weather == "ممطر") {\n  console.log("دعونا نحضر مظلة.");\n} if {\n  console.log("على الأرجح لا تحتاج إلى مظلة.");\n}' }], correctAnswer: 1 },
+            // Q7
+            { id: 7, title: "السؤال 7", text: "حدد البرنامج الذي يقوم بإخراج النص: تاكويا أطول مني", targetOutput: "تاكويا أطول مني", options: [{ code: 'let takuyaHeight = 170;\nlet myHeight = 160;\n\nif (takuyaHeight < myHeight) {\n  "تاكويا أقصر مني";\n} else (takuyaHeight > myHeight) {\n  "تاكويا أطول مني";\n} else {\n  "تاكويا هو نفس طولي";\n}' }, { code: 'let takuyaHeight = 170;\nlet myHeight = 160;\n\nif (takuyaHeight < myHeight) {\n  console.log("تاكويا أقصر مني");\n} else (takuyaHeight > myHeight) {\n  console.log("تاكويا أطول مني");\n} else {\n  console.log("تاكويا هو نفس طولي");\n}' }, { code: 'let takuyaHeight = 170;\nlet myHeight = 160;\n\nif (takuyaHeight < myHeight) {\n  console.log("تاكويا أقصر مني");\n} else if (takuyaHeight > myHeight) {\n  console.log("تاكويا أطول مني");\n} else {\n  console.log("تاكويا هو نفس طولي");\n}' }, { code: 'let takuyaHeight = 170;\nlet myHeight = 160;\n\nif (takuyaHeight < myHeight) {\n  "تاكويا أقصر مني";\n} else if (takuyaHeight > myHeight) {\n  "تاكويا أطول مني";\n} else {\n  "تاكويا هو نفس طولي";\n}' }], correctAnswer: 2 },
+            // Q8
+            { id: 8, title: "السؤال 8", text: "حدد البرنامج الذي يقوم بإخراج النص: نحن نؤجر قاعات اجتماعات كبيرة", targetOutput: "نحن نؤجر قاعات اجتماعات كبيرة", options: [{ code: 'let peopleNum = 25;\n\nif (peopleNum < 10) {\n  console.log("نحن نؤجر قاعات اجتماعات صغيرة.");\n} else if (peopleNum < 30) {\n  console.log("نحن نؤجر قاعات اجتماعات كبيرة.");\n} else {\n  console.log("لا تتوفر غرف اجتماعات مناسبة.");\n}' }, { code: 'let peopleNum = 25;\n\nif else (peopleNum < 10) {\n  console.log("نحن نؤجر قاعات اجتماعات صغيرة.");\n} else (peopleNum < 30) {\n  console.log("نحن نؤجر قاعات اجتماعات كبيرة.");\n} else {\n  console.log("لا تتوفر غرف اجتماعات مناسبة.");\n}' }, { code: 'let peopleNum = 25;\n\nif else (peopleNum < 10) {\n  console.log("نحن نؤجر قاعات اجتماعات صغيرة.");\n} else if (peopleNum < 30) {\n  console.log("نحن نؤجر قاعات اجتماعات كبيرة.");\n} else {\n  console.log("لا تتوفر غرف اجتماعات مناسبة.");\n}' }, { code: 'let peopleNum = 25;\n\nif (peopleNum < 10) {\n  console.log("نحن نؤجر قاعات اجتماعات صغيرة.");\n} else (peopleNum < 30) {\n  console.log("نحن نؤجر قاعات اجتماعات كبيرة.");\n} else {\n  console.log("لا تتوفر غرف اجتماعات مناسبة.");\n}' }], correctAnswer: 0 },
+            // Q9
+            { id: 9, title: "السؤال 9", text: "حدد البرنامج الذي يقوم بإخراج النص: لا يمكن حفظ الفيديو بسبب عدم وجود مساحة تخزين كافية", targetOutput: "لا يمكن حفظ الفيديو بسبب عدم وجود مساحة تخزين كافية.", options: [{ code: 'let videoSize = 25;\nlet freeCapacity = 20;\n\nif ((freeCapacity - videoSize) > 5) {\n  console.log(": لا يزال بإمكانك حفظ الفيديو، فهناك مساحة كافية");\n} else if ((freeCapacity - videoSize) < 0) {\n  console.log("لا يمكن حفظ الفيديو بسبب عدم وجود مساحة تخزين كافية.");\n} else {\n  console.log("يمكن حفظ الفيديو، لكن مساحة التخزين أصبحت منخفضة.");\n}' }, { code: 'let videoSize = 25;\nlet freeCapacity = 20;\n\nif ((freeCapacity - videoSize) > 5) {\n  console.log(": لا يزال بإمكانك حفظ الفيديو، فهناك مساحة كافية");\n} else if ((freeCapacity + videoSize) < 0) {\n  console.log("لا يمكن حفظ الفيديو بسبب عدم وجود مساحة تخزين كافية.");\n} else {\n  console.log("يمكن حفظ الفيديو، لكن مساحة التخزين أصبحت منخفضة.");\n}' }, { code: 'let videoSize = 25;\nlet freeCapacity = 20;\n\nif ((freeCapacity - videoSize) > 5) {\n  console.log(": لا يزال بإمكانك حفظ الفيديو، فهناك مساحة كافية");\n} else ((freeCapacity - videoSize) < 0) {\n  console.log("لا يمكن حفظ الفيديو بسبب عدم وجود مساحة تخزين كافية.");\n} else {\n  console.log("يمكن حفظ الفيديو، لكن مساحة التخزين أصبحت منخفضة.");\n}' }, { code: 'let videoSize = 25;\nlet freeCapacity = 20;\n\nif ((freeCapacity - videoSize) > 5) {\n  console.log(": لا يزال بإمكانك حفظ الفيديو، فهناك مساحة كافية");\n} else ((freeCapacity + videoSize) < 0) {\n  console.log("لا يمكن حفظ الفيديو بسبب عدم وجود مساحة تخزين كافية.");\n} else {\n  console.log("يمكن حفظ الفيديو، لكن مساحة التخزين أصبحت منخفضة.");\n}' }], correctAnswer: 0 },
+            // Q10
+            { id: 10, title: "السؤال 10", text: "حدد البرنامج الذي يقوم بإخراج النص: الوقود ممتلئ", targetOutput: "الوقود ممتلئ.", options: [{ code: 'let fuel 100;\n\nif (fuel == 100) {\n  console.log("الوقود ممتلئ.");\n}' }, { code: 'let fuel 100;\n\nif (fuel > 100) {\n  console.log("الوقود ممتلئ.");\n}' }, { code: 'let fuel = 100;\n\nif (fuel > 100) {\n  console.log("الوقود ممتلئ.");\n}' }, { code: 'let fuel = 100;\n\nif (fuel == 100) {\n  console.log("الوقود ممتلئ.");\n}' }], correctAnswer: 3 },
+            // Q11 (New)
+            { id: 11, title: "السؤال 11", text: "حدد البرنامج الذي يقوم بإخراج ما يلي:", targetOutput: "سأشتري نظام تحديد المواقع في السيارة من السوق الخارجي\nنظام تحديد المواقع من السوق الخارجي", options: [{ code: 'let element = "نظام تحديد المواقع في السيارة";\nif (element < "نظام تحديد المواقع في السيارة") {\n  console.log("سأشتري نظام تحديد المواقع في السيارة من السوق الخارجي");\n  element = "نظام تحديد المواقع من السوق الخارجي";\n}\nconsole.log(element);' }, { code: 'let element = "نظام تحديد المواقع في السيارة";\nif (element == "نظام تحديد المواقع في السيارة") {\n  console.log("سأشتري نظام تحديد المواقع في السيارة من السوق الخارجي");\n  element = "نظام تحديد المواقع من السوق الخارجي";\n}\nconsole.log(element);' }, { code: 'let element = "نظام تحديد المواقع في السيارة";\nif (element == "نظام تحديد المواقع في السيارة") {\n  console.log("سأشتري نظام تحديد المواقع في السيارة من السوق الخارجي");\n  element - "نظام تحديد المواقع من السوق الخارجي";\n}\nconsole.log(element);' }, { code: 'let element = "نظام تحديد المواقع في السيارة";\nif (element < "نظام تحديد المواقع في السيارة") {\n  console.log("سأشتري نظام تحديد المواقع في السيارة من السوق الخارجي");\n  element - "نظام تحديد المواقع من السوق الخارجي";\n}\nconsole.log(element);' }], correctAnswer: 1 },
+            // Q12 (New)
+            { id: 12, title: "السؤال 12", text: "حدد البرنامج الذي يقوم بإخراج النص: التصحيح مطلوب", targetOutput: "التصحيح مطلوب", options: [{ code: 'let errorCount = 5;\nif (errorCount == 0) {\n  console.log("لا حاجة للتصحيح.");\n} else {\n  console.log("التصحيح مطلوب.");\n}' }, { code: 'let errorCount = 5;\nif (errorCount > 0) {\n  console.log("لا حاجة للتصحيح.");\n} else {\n  console.log("التصحيح مطلوب.");\n}' }, { code: 'let errorCount = 5;\nif (errorCount == 0) {\n  console.log("لا حاجة للتصحيح.");\n} if {\n  console.log("التصحيح مطلوب.");\n}' }, { code: 'let errorCount = 5;\nif (errorCount > 0) {\n  console.log("لا حاجة للتصحيح.");\n} if {\n  console.log("التصحيح مطلوب.");\n}' }], correctAnswer: 0 },
+            // Q13 (New)
+            { id: 13, title: "السؤال 13", text: "حدد البرنامج الذي يقوم بإخراج النص: لقد نجحت", targetOutput: "لقد نجحت.", options: [{ code: 'let score = 80;\nlet borderline = 60;\nif (score < borderline) {\n  console.log("لقد نجحت.");\n}' }, { code: 'let score = 80;\nlet borderline = 60;\nif (score > borderline) {\n  "لقد نجحت.";\n}' }, { code: 'let score = 80;\nlet borderline = 60;\nif (score > borderline) {\n  console.log("لقد نجحت.");\n}' }, { code: 'let score = 80;\nlet borderline = 60;\nif (score < borderline) {\n  "لقد نجحت.";\n}' }], correctAnswer: 2 },
+            // Q14 (New)
+            { id: 14, title: "السؤال 14", text: "حدد البرنامج الذي يقوم بإخراج النص: سأتناول وجبة خفيفة", targetOutput: "سأتناول وجبة خفيفة", options: [{ code: 'let action = "دراسة";\nlet timeZone = 16;\nif (timeZone > 15) {\n  action = "سأتناول وجبة خفيفة.";\n}\nconsole.log(action);' }, { code: 'let action = "دراسة";\nlet timeZone = 16;\nif (timeZone < 15) {\n  action("سأتناول وجبة خفيفة.");\n}\nconsole.log(action);' }, { code: 'let action = "دراسة";\nlet timeZone = 16;\nif (timeZone < 15) {\n  action = "سأتناول وجبة خفيفة.";\n}\nconsole.log(action);' }, { code: 'let action = "دراسة";\nlet timeZone = 16;\nif (timeZone > 15) {\n  action("سأتناول وجبة خفيفة.");\n}\nconsole.log(action);' }], correctAnswer: 0 },
+            // Q15 (New)
+            { id: 15, title: "السؤال 15", text: "حدد البرنامج الذي يقوم بإخراج النص: مطلوب الحجز عبر الهاتف", targetOutput: "مطلوب الحجز عبر الهاتف", options: [{ code: 'let peopleNum = 10;\nif (peopleNum > 8) {\n  console.log("مطلوب الحجز عبر الهاتف.");\n}' }, { code: 'let peopleNum 10;\nif (peopleNum < 8) {\n  console.log("مطلوب الحجز عبر الهاتف.");\n}' }, { code: 'let peopleNum = 10;\nif (peopleNum < 8) {\n  console.log("مطلوب الحجز عبر الهاتف.");\n}' }, { code: 'let peopleNum 10;\nif (peopleNum > 8) {\n  console.log("مطلوب الحجز عبر الهاتف.");\n}' }], correctAnswer: 0 },
+            // Q16 (New)
+            { id: 16, title: "السؤال 16", text: "حدد البرنامج الذي يقوم بإخراج النص: سنصطحبك إلى طاولة", targetOutput: "سنصطحبك إلى طاولة", options: [{ code: 'let peopleNum = 9;\nif else (peopleNum < 3) {\n  console.log("تفضل إلى طاولة عالية مشتركة.");\n} else if (peopleNum < 10) {\n  console.log("سنصطحبك إلى طاولة.");\n} else {\n  console.log("سنصطحبك إلى غرفة خاصة.");\n}' }, { code: 'let peopleNum = 9;\nif (peopleNum < 3) {\n  console.log("تفضل إلى طاولة عالية مشتركة.");\n} else (peopleNum < 10) {\n  console.log("سنصطحبك إلى طاولة.");\n} else {\n  console.log("سنصطحبك إلى غرفة خاصة.");\n}' }, { code: 'let peopleNum = 9;\nif (peopleNum < 3) {\n  console.log("تفضل إلى طاولة عالية مشتركة.");\n} else if (peopleNum < 10) {\n  console.log("سنصطحبك إلى طاولة.");\n} else {\n  console.log("سنصطحبك إلى غرفة خاصة.");\n}' }, { code: 'let peopleNum = 9;\nif else (peopleNum < 3) {\n  console.log("تفضل إلى طاولة عالية مشتركة.");\n} else (peopleNum < 10) {\n  console.log("سنصطحبك إلى طاولة.");\n} else {\n  console.log("سنصطحبك إلى غرفة خاصة.");\n}' }], correctAnswer: 2 },
+            // Q17 (New)
+            { id: 17, title: "السؤال 17", text: "حدد البرنامج الذي يقوم بإخراج النص: تبدأ المدرسة غداً", targetOutput: "تبدأ المدرسة غداً", options: [{ code: 'if (weekday == "الأحد") {\n  "تبدأ المدرسة غداً.";\n}\nlet weekday = "الأحد";' }, { code: 'let weekday = "الأحد";\nif (weekday == "الأحد") {\n  "تبدأ المدرسة غداً.";\n}' }, { code: 'if (weekday == "الأحد") {\n  console.log("تبدأ المدرسة غداً.");\n}\nlet weekday = "الأحد";' }, { code: 'let weekday = "الأحد";\nif (weekday == "الأحد") {\n  console.log("تبدأ المدرسة غداً.");\n}' }], correctAnswer: 3 },
+            // Q18 (New)
+            { id: 18, title: "السؤال 18", text: "حدد البرنامج الذي يقوم بإخراج النص: من فضلك توقف", targetOutput: "من فضلك توقف", options: [{ code: 'let signal = "أصفر";\nif (signal == "أخضر") {\n  console.log("يمكنك المتابعة.");\n} else {\n  console.log("من فضلك توقف.");\n}' }, { code: 'let signal = "أصفر";\nelse if (signal == "أخضر") {\n  console.log("يمكنك المتابعة.");\n} else {\n  console.log("من فضلك توقف.");\n}' }, { code: 'if (signal == "أخضر") {\n  console.log("يمكنك المتابعة.");\n} else {\n  console.log("من فضلك توقف.");\n}\nlet signal = "أصفر";' }, { code: 'let signal = "أصفر";\nelse if (signal == "أخضر") {\n  console.log("يمكنك المتابعة.");\n} else {\n  console.log("من فضلك توقف.");\n}' }], correctAnswer: 0 },
+            // Q19 (New)
+            { id: 19, title: "السؤال 19", text: "حدد البرنامج الذي يقوم بإخراج النص: البرتقال والتفاح لهما نفس التكلفة", targetOutput: "البرتقال والتفاح لهما نفس التكلفة", options: [{ code: 'let orangePrice = 150;\nlet applePrice = 150;\nif (orangePrice == applePrice) {\n  console.log("البرتقال والتفاح لهما نفس التكلفة.");\n}' }, { code: 'if (orangePrice > applePrice) {\n  console.log("البرتقال والتفاح لهما نفس التكلفة.");\n}\nlet orangePrice = 150;\nlet applePrice = 150;' }, { code: 'if (orangePrice == applePrice) {\n  console.log("البرتقال والتفاح لهما نفس التكلفة.");\n}\nlet orangePrice = 150;\nlet applePrice = 150;' }, { code: 'let orangePrice = 150;\nlet applePrice = 150;\nif (orangePrice > applePrice) {\n  console.log("البرتقال والتفاح لهما نفس التكلفة.");\n}' }], correctAnswer: 0 },
+            // Q20 (New)
+            { id: 20, title: "السؤال 20", text: "حدد البرنامج الذي يقوم بإخراج النص: يمكنك شراء كتاب", targetOutput: "يمكنك شراء كتاب", options: [{ code: 'let bookPrice = 1500;\nlet myWallet = 10000;\nif (myWallet > bookPrice) {\n  console.log("يمكنك شراء كتاب.");\n} else {\n  console.log("ليس هناك ما يكفي من المال");\n}' }, { code: 'if (myWallet < bookPrice) {\n  console.log("يمكنك شراء كتاب.");\n} else {\n  console.log("ليس هناك ما يكفي من المال");\n}\nlet bookPrice = 1500;\nlet myWallet = 10000;' }, { code: 'if (myWallet > bookPrice) {\n  console.log("يمكنك شراء كتاب.");\n} else {\n  console.log("ليس هناك ما يكفي من المال");\n}\nlet bookPrice = 1500;\nlet myWallet = 10000;' }, { code: 'let bookPrice = 1500;\nlet myWallet = 10000;\nif (myWallet < bookPrice) {\n  console.log("يمكنك شراء كتاب.");\n} else {\n  console.log("ليس هناك ما يكفي من المال");\n}' }], correctAnswer: 0 }
         ];
 
         let currentQIndex = 0;
         let selectedAnswers = {};
         let timerTime = 40 * 60;
 
-        // --- 3. منطق الحفظ التلقائي ---
-        const STORAGE_KEY = 'exam_state_final_v20';
+        // --- 3. منطق الحفظ التلقائي (localStorage) ---
+        const STORAGE_KEY = 'exam_state_auto_v1';
 
         function saveState() {
             const state = {
@@ -428,7 +485,7 @@
                 const state = JSON.parse(saved);
                 currentQIndex = state.currentQIndex || 0;
                 selectedAnswers = state.selectedAnswers || {};
-                timerTime = (state.timerTime !== undefined) ? state.timerTime : 40 * 60;
+                timerTime = state.timerTime || 40 * 60;
             }
         }
 
@@ -437,7 +494,7 @@
         }
 
         window.onload = function() {
-            loadState(); 
+            loadState(); // استرجاع البيانات عند الفتح
             loadQuestion(currentQIndex);
             startTimer();
             updateNavButtons();
@@ -445,7 +502,7 @@
 
         function loadQuestion(index) {
             currentQIndex = index;
-            saveState(); 
+            saveState(); // حفظ التقدم
             const q = questions[index];
             document.getElementById('q-title').innerText = q.title;
             document.getElementById('q-text').innerText = q.text;
@@ -480,7 +537,7 @@
             allCards.forEach(c => c.classList.remove('selected'));
             cardElement.classList.add('selected');
             selectedAnswers[currentQIndex] = optionIndex;
-            saveState(); 
+            saveState(); // حفظ الإجابة فوراً
         }
 
         function nextQuestion() {
@@ -519,7 +576,7 @@
                 
                 if (timerTime > 0) {
                     timerTime--;
-                    if(timerTime % 5 === 0) saveState(); 
+                    if(timerTime % 5 === 0) saveState(); // حفظ كل 5 ثواني
                 } else {
                     clearInterval(interval);
                     showConfirmModal();
@@ -567,17 +624,18 @@
             document.getElementById('confirmModal').style.display = 'none';
         }
 
+        // --- 4. حساب النتيجة وعرض الأخطاء ---
         function finalizeExam() {
             document.getElementById('confirmModal').style.display = 'none';
             
             let score = 0;
-            let wrongQs = []; 
+            let wrongQs = []; // لتخزين أرقام الأسئلة الخطأ
 
             questions.forEach((q, i) => {
                 if (selectedAnswers[i] === q.correctAnswer) {
                     score++;
                 } else {
-                    wrongQs.push(i + 1); 
+                    wrongQs.push(i + 1); // إضافة رقم السؤال
                 }
             });
 
@@ -586,14 +644,14 @@
             scoreDiv.style.display = 'block';
             scoreDiv.innerHTML = `النتيجة النهائية: ${score} من ${questions.length} (${Math.round((score/questions.length)*100)}%)`;
 
-            // عرض الأخطاء
+            // عرض صندوق الأخطاء
             const wrongDiv = document.getElementById('wrongQuestionsDisplay');
             if (wrongQs.length > 0) {
                 wrongDiv.style.display = 'block';
                 wrongDiv.style.backgroundColor = '#ffebee';
                 wrongDiv.style.borderColor = '#ffcdd2';
                 wrongDiv.style.color = '#c62828';
-                wrongDiv.innerHTML = `<strong>أرقام الأسئلة الخطأ (أو غير المجابة):</strong><br> ${wrongQs.join(' - ')}`;
+                wrongDiv.innerHTML = `<strong>أرقام الأسئلة الخطأ:</strong><br> ${wrongQs.join(' - ')}`;
             } else {
                 wrongDiv.style.display = 'block';
                 wrongDiv.style.backgroundColor = '#e8f5e9';
@@ -606,10 +664,46 @@
         }
 
         function closeSuccessModal() {
-            clearState(); 
-            sessionStorage.removeItem("access"); 
-            window.location.replace("dashboard.html"); // العودة للوحة التحكم عند الإغلاق
+            clearState(); // مسح البيانات عند الإغلاق النهائي
+            sessionStorage.removeItem("access"); // تأمين الخروج
+            window.location.replace("login.html");
         }
     </script>
+<script>
+    // 1. منع الزر الأيمن للماوس (Right Click)
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        // يمكنك إظهار رسالة تحذيرية اختيارية
+        // alert("تم تعطيل هذه الوظيفة للحفاظ على سرية الاختبار");
+    });
+
+    // 2. منع اختصارات لوحة المفاتيح الشائعة للنسخ والفحص
+    document.onkeydown = function(e) {
+        // منع F12
+        if(event.keyCode == 123) {
+            return false;
+        }
+        // منع Ctrl+U (عرض المصدر)
+        if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+            return false;
+        }
+        // منع Ctrl+Shift+I (فحص العنصر)
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+            return false;
+        }
+        // منع Ctrl+Shift+J (فتح الكونسول)
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+            return false;
+        }
+        // منع Ctrl+Shift+C (فحص العنصر)
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) {
+            return false;
+        }
+        // منع Ctrl+S (حفظ الصفحة)
+        if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) {
+            return false;
+        }
+    }
+</script>
 </body>
 </html>
